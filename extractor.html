@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Topway PDF Question Import</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <style>
+      .extractor-wrap { width: min(1180px, calc(100% - 32px)); margin: 22px auto 44px; }
+      .question-card { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+      .question-card textarea { min-height: 130px; }
+      .choice-row { display: grid; grid-template-columns: 58px 1fr; gap: 8px; align-items: center; }
+      .meta-grid { display: grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap: 10px; }
+      .toolbar { position: sticky; top: 0; z-index: 2; background: var(--soft); padding: 10px 0; }
+      @media (max-width: 800px) { .meta-grid { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">TOP<br />WAY</div>
+        <div>
+          <h1>Topway / Master Tutoring Center</h1>
+          <small>PDF Question Import</small>
+        </div>
+      </div>
+    </header>
+
+    <main class="extractor-wrap stack">
+      <section class="panel stack">
+        <div class="section-head">
+          <div>
+            <h2>Import Questions From PDF</h2>
+            <p class="subtle">Local Docling extraction. No paid PDF API.</p>
+          </div>
+        </div>
+        <form id="uploadForm" class="stack">
+          <div class="field">
+            <label>PDF File</label>
+            <input id="pdfFile" name="file" type="file" accept="application/pdf" required />
+            <p class="hint">Maximum size: 50 MB. Numbered questions should look like 1. or Question 1:</p>
+          </div>
+          <button class="primary" type="submit">Extract Questions</button>
+        </form>
+      </section>
+
+      <section class="toolbar row no-print">
+        <button class="ghost" type="button" onclick="selectAll(true)">Select All</button>
+        <button class="ghost" type="button" onclick="selectAll(false)">Clear</button>
+        <button class="primary" type="button" onclick="downloadSelected()">Download Selected JSON</button>
+        <span id="status" class="subtle"></span>
+      </section>
+
+      <section id="results" class="stack"></section>
+    </main>
+
+    <script>
+      let extracted = [];
+
+      document.getElementById("uploadForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const file = document.getElementById("pdfFile").files[0];
+        if (!file) return;
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          setStatus("Only PDF files are accepted.");
+          return;
+        }
+        if (file.size > 50 * 1024 * 1024) {
+          setStatus("PDF is too large. Maximum upload size is 50 MB.");
+          return;
+        }
+
+        setStatus("Extracting with Docling...");
+        const form = new FormData();
+        form.append("file", file);
+
+        try {
+          const response = await fetch("/extract-questions", { method: "POST", body: form });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.detail || "Extraction failed.");
+          extracted = data.questions;
+          renderQuestions();
+          setStatus(`Extracted ${data.question_count} questions from ${data.original_filename}.`);
+        } catch (error) {
+          setStatus(error.message);
+        }
+      });
+
+      function setStatus(message) {
+        document.getElementById("status").textContent = message;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function renderQuestions() {
+        const results = document.getElementById("results");
+        results.innerHTML = extracted
+          .map((question, index) => {
+            const choices = question.answer_choices.length
+              ? question.answer_choices
+                  .map(
+                    (choice, choiceIndex) => `
+                      <div class="choice-row">
+                        <input data-index="${index}" data-choice="${choiceIndex}" data-field="label" value="${escapeHtml(choice.label)}" />
+                        <input data-index="${index}" data-choice="${choiceIndex}" data-field="text" value="${escapeHtml(choice.text)}" />
+                      </div>
+                    `
+                  )
+                  .join("")
+              : `<p class="hint">No answer choices detected.</p>`;
+
+            return `
+              <article class="question-card">
+                <label class="row">
+                  <input type="checkbox" data-select="${index}" checked />
+                  <strong>Save Question ${question.question_number}</strong>
+                </label>
+                <div class="meta-grid">
+                  <div class="field"><label>Question #</label><input data-index="${index}" data-field="question_number" value="${question.question_number}" /></div>
+                  <div class="field"><label>Page</label><input data-index="${index}" data-field="page_number" value="${question.page_number ?? ""}" /></div>
+                  <div class="field"><label>Subject</label><input data-index="${index}" data-field="subject" value="${escapeHtml(question.subject)}" /></div>
+                  <div class="field"><label>Difficulty</label><input data-index="${index}" data-field="difficulty_level" value="${escapeHtml(question.difficulty_level)}" /></div>
+                </div>
+                <div class="field">
+                  <label>Question Text</label>
+                  <textarea data-index="${index}" data-field="question_text">${escapeHtml(question.question_text)}</textarea>
+                </div>
+                <div class="stack">
+                  <h3>Answer Choices</h3>
+                  ${choices}
+                </div>
+                <p class="hint">Original file: ${escapeHtml(question.original_filename)}</p>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function syncEdits() {
+        document.querySelectorAll("[data-index][data-field]").forEach((input) => {
+          const index = Number(input.dataset.index);
+          const field = input.dataset.field;
+          const value = input.value;
+          if (field === "question_number" || field === "page_number") {
+            extracted[index][field] = value ? Number(value) : null;
+          } else {
+            extracted[index][field] = value;
+          }
+        });
+        document.querySelectorAll("[data-index][data-choice][data-field]").forEach((input) => {
+          const index = Number(input.dataset.index);
+          const choiceIndex = Number(input.dataset.choice);
+          extracted[index].answer_choices[choiceIndex][input.dataset.field] = input.value;
+        });
+      }
+
+      function selectAll(checked) {
+        document.querySelectorAll("[data-select]").forEach((box) => {
+          box.checked = checked;
+        });
+      }
+
+      function downloadSelected() {
+        syncEdits();
+        const selected = [...document.querySelectorAll("[data-select]")]
+          .filter((box) => box.checked)
+          .map((box) => extracted[Number(box.dataset.select)]);
+        const blob = new Blob([JSON.stringify({ questions: selected }, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "topway-extracted-questions.json";
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    </script>
+  </body>
+</html>
