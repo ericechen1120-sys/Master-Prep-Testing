@@ -1,7 +1,0 @@
-Question Type,Question,Options,Drop Zones,Correct Answer Text,Subject,Skill,Section / Topic,Question Image URL,Question Family ID
-numeric,"Solve: 3x + 5 = 20. Enter only the value of x.",,,"5",Math,Algebra,"Math Section 1",,MATH-001
-equation,"Write 25 as an exponent. Enter only the equation.",,"","5^2",Math,Exponents,"Math Section 1",,MATH-002
-fill_blank,"The value of 7 × 8 is [[blank]].","","","56",Math,Arithmetic,"Math Section 1",,MATH-003
-dropdown,"A triangle with all three sides equal is [[blank]].","equilateral;isosceles;scalene","","equilateral",Math,Geometry,"Math Section 1",,MATH-004
-drag_drop,"Drag each number to the correct category.","2;5;8;11","Even;Odd","{""2"":""Even"",""5"":""Odd"",""8"":""Even"",""11"":""Odd""}",Math,Number Properties,"Math Section 1",,MATH-005
-hotspot,"Select the point at (2, 3) on the coordinate plane.","point-a::(2, 3)::20::30::12::12;point-b::(3, 2)::55::55::12::12","","point-a",Math,Coordinate Geometry,"Math Section 1","PASTE-AN-IMAGE-URL-HERE",MATH-006
