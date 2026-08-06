@@ -1,0 +1,6 @@
+Question Number,Group ID,Passage Title,Passage / Stimulus,Question,Choice 1 Label,Choice 1 Text,Choice 2 Label,Choice 2 Text,Choice 3 Label,Choice 3 Text,Choice 4 Label,Choice 4 Text,Options,Drop Zones,Grid Rows,Correct Answer Letter,Correct Answer Text,Question Type,Difficulty (1-4),Skill,Answer Explanation
+1,,,,What is 2 + 2?,A,3,B,4,C,5,D,6,,,,B,,multiple,1,Arithmetic,
+2,,,,The capital of France is [[blank]].,,,,,,,,,Paris; Rome; Madrid,,,,Paris,dropdown,1,Geography,Use [[blank]] where the dropdown belongs.
+3,,,,Complete the sentence: Water freezes at ____ degrees Celsius.,,,,,,,,,,,,,0,fill_blank,1,Science,
+4,,,,Move each number to the correct group.,,,,,,,,,One; Two,Odd; Even,,,One=Odd; Two=Even,drag_drop,1,Number Sense,Use Item=Drop Zone; Item=Drop Zone.
+5,Greenland,Greenland's Melting Glaciers,"Scientists study glaciers to understand how Earth's climate is changing.","For each statement, decide whether it is correct or incorrect.",,,,,,,,,Correct; Incorrect,,"The glacier surface remains frozen all year;New technology helps scientists study hidden heat",,"1=Incorrect; 2=Correct",table_grid,2,Claim and Evidence,Use 1=Answer; 2=Answer for table rows.
