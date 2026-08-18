@@ -1,0 +1,31 @@
+TOPWAY REDEPLOY PACKAGE - AUGUST 11, 2026
+
+This folder contains the latest Topway testing and student-record system.
+
+For a GitHub + Render redeploy:
+
+1. Open this folder.
+2. Upload the CONTENTS of this folder to the root of the existing GitHub repository.
+   Do not upload this folder as an extra nested directory.
+3. Confirm GitHub shows app.js, server.js, index.html, styles.css, package.json,
+   and the assets folder at the repository root.
+4. Redeploy the existing Render Web Service.
+
+Render settings:
+
+Build Command: npm install
+Start Command: npm start
+
+Keep the existing Render environment variables:
+
+TOPWAY_ADMIN_PASSWORD
+DATABASE_URL
+
+Important:
+
+- The data folder is intentionally excluded so no private student data is placed
+  inside this upload package.
+- Existing exams, records, and reports remain in the configured Neon database.
+- The exact Topway Prep logo is included at assets/topway-prep-logo.png.
+- Do not deploy this as a static website. It must be a Render Web Service.
+
