@@ -1,0 +1,74 @@
+TOPWAY RENDER MEMORY FIX - OCTOBER 5, 2026 - BUILD 2026.10.05.1
+
+WHAT THIS FIXES
+
+- Stops every student start/submit from serializing the entire exam database.
+- Moves embedded PDF/base64 question images into deduplicated media storage.
+- Prevents a student from creating a second report for the same exam.
+- Keeps intentional retakes possible: an administrator can delete the earlier
+  report, then the student can start that exam again.
+- Limits JSON requests to 16 MB by default so one request cannot consume the
+  server heap unexpectedly.
+- Adds RSS, heap, and external-memory numbers to /api/health.
+
+VERIFIED LOAD
+
+The packaged build was tested with both a 50-question ELA exam and a separate
+50-question Math exam open under the same code while 75 students loaded, started,
+and submitted across the two sections simultaneously. All 75 attempts and all
+75 submissions were saved exactly once.
+
+SAFE REDEPLOY
+
+1. In Admin > Tools, download a Full Backup before changing the deployment.
+2. Open the supplied deployment folder and upload its CONTENTS to the root of
+   the existing GitHub repository. Do not upload the ZIP or an extra folder.
+3. Keep the existing Render environment variables:
+   TOPWAY_ADMIN_PASSWORD
+   DATABASE_URL
+4. Recommended: set TOPWAY_DB_POOL_MAX=3.
+5. Keep one Render instance and WEB_CONCURRENCY=1.
+6. Use Build Command: npm install
+7. Use Start Command: npm start
+8. Set Health Check Path: /api/health
+9. Redeploy the existing Render Web Service.
+
+VERIFY
+
+Open:
+https://master-prep-testing.onrender.com/api/health
+
+Confirm:
+- "status":"ok"
+- "build":"2026.10.05.1"
+- "databaseConfigured":true
+- memoryMb is present
+
+Then open Admin and verify an exam and a saved report. Existing database data is
+not deleted by this deployment. Existing duplicate reports are also preserved;
+review and delete only the ones you confirm are unwanted.
+
+FIRST START AFTER DEPLOY
+
+The server creates a media_assets table and converts existing embedded question
+images to small /api/media/... links. This is automatic. The site may take a
+little longer to warm the first time if many images need migration. Do not run
+several manual redeploys while that first migration is in progress.
+
+IF V8 STILL REPORTS "JAVASCRIPT HEAP OUT OF MEMORY"
+
+After confirming build 2026.10.05.1 is live, you can temporarily add this Render
+environment variable on a 2 GB instance:
+
+NODE_OPTIONS = --max-old-space-size=1400
+
+Do not set it close to the full 2 GB because Node also needs non-heap memory.
+Capture the full log lines immediately above the next exit 134 and check the
+memoryMb values at /api/health.
+
+ABOUT MULTIPLE SUBMISSIONS
+
+New duplicates are blocked by student number (or by the unique student name when
+no number is available). A repeated Submit returns the original report. A new
+Start is rejected after that exam was submitted. Use unique Student Numbers for
+the most reliable matching.

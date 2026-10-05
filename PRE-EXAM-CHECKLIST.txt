@@ -1,0 +1,45 @@
+TOPWAY PRE-EXAM CHECKLIST - 60+ STUDENTS
+
+BEFORE REDEPLOY
+
+[ ] Download a Full Backup from Admin > Tools.
+[ ] Upload the CONTENTS of the new build folder to the GitHub repository root.
+[ ] Keep DATABASE_URL and TOPWAY_ADMIN_PASSWORD in Render.
+[ ] Set TOPWAY_DB_POOL_MAX=3.
+[ ] Keep WEB_CONCURRENCY=1 and one Render instance.
+[ ] Set the Render Health Check Path to /api/health.
+
+AFTER REDEPLOY
+
+[ ] Open https://master-prep-testing.onrender.com/api/health.
+[ ] Confirm build=2026.10.05.1 and databaseConfigured=true.
+[ ] Confirm memoryMb appears in the health response.
+[ ] Open Admin and verify the exam, answer key, images, and one saved report.
+[ ] Run one practice login with a test student number.
+[ ] Download another Full Backup.
+
+15 TO 20 MINUTES BEFORE THE EXAM
+
+[ ] Open the site and /api/health so the service is warm.
+[ ] Confirm the exam is Open and its code and timer are correct.
+[ ] Have every student use their unique Student Number.
+[ ] Do not edit/redeploy the exam while students are taking it.
+[ ] Students should click Submit once and wait for confirmation.
+
+IF A STUDENT REFRESHES
+
+Use the same device/browser, student name, Student Number, and exam code. The
+existing attempt and locally saved answers should return.
+
+IF A STUDENT ALREADY SUBMITTED
+
+The server will return the original report and will not create another one. For
+an intentional retake, an administrator must first delete the earlier report.
+
+IF RENDER RETURNS 502
+
+1. Check /api/health and the Render event/log page.
+2. Confirm the deployed health response says build 2026.10.05.1.
+3. Do not ask all students to refresh repeatedly at the same time.
+4. If the process exits again, save the lines immediately before exit 134 and
+   record memoryMb from /api/health.
